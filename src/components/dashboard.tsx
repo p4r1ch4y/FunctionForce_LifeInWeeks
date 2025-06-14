@@ -20,6 +20,7 @@ import AIInsights from './ai-insights';
 import SampleDataSeeder from './sample-data-seeder';
 import DatabaseStatus from './database-status';
 import HistoricalEventsPopulator from './historical-events-populator';
+import AnniversaryReminders from './anniversary-reminders';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase-client';
 import { useRouter } from 'next/navigation';
@@ -143,6 +144,11 @@ export default function Dashboard({ userId }: DashboardProps) {
           <HistoricalEventsPopulator
             onPopulated={() => window.location.reload()}
           />
+        </div>
+
+        {/* Anniversary Reminders */}
+        <div className="mb-6">
+          <AnniversaryReminders userId={userId} />
         </div>
 
         {/* Sample Data Seeder */}

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase-client';
 import { analyzeSentiment } from '@/lib/ai';
+import FileUpload from './file-upload';
 import type { PersonalEvent } from '@/types';
 
 interface EventFormProps {
@@ -16,6 +17,7 @@ export default function EventForm({ userId, onSuccess, event }: EventFormProps) 
   const [description, setDescription] = useState(event?.description || '');
   const [date, setDate] = useState(event?.date ? new Date(event.date).toISOString().split('T')[0] : '');
   const [category, setCategory] = useState<PersonalEvent['category']>(event?.category || 'Personal');
+  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -157,6 +159,19 @@ export default function EventForm({ userId, onSuccess, event }: EventFormProps) 
           <option value="Personal">Personal</option>
           <option value="Travel">Travel</option>
         </select>
+      </div>
+
+      {/* File Attachments */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Attachments (Optional)
+        </label>
+        <FileUpload
+          onFilesChange={setAttachedFiles}
+          maxFiles={3}
+          maxSizePerFile={5}
+          acceptedTypes={['image/*', 'application/pdf', '.doc', '.docx', '.txt']}
+        />
       </div>
 
       {error && (

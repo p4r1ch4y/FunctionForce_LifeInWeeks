@@ -14,6 +14,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { createClient } from '@/lib/supabase-client';
 import HistoricalEventsPanel from './historical-events-panel';
+import TimelineExport from './timeline-export';
 import { TimelineWeek, PersonalEvent } from '@/types';
 
 interface AdvancedTimelineProps {
@@ -291,6 +292,12 @@ export default function AdvancedTimeline({ userId }: AdvancedTimelineProps) {
         </div>
 
         <div className="flex items-center space-x-2">
+          <TimelineExport
+            timelineRef={timelineRef}
+            userName="User"
+            totalEvents={weeks.reduce((total, week) => total + week.personalEvents.length, 0)}
+          />
+
           <button
             onClick={() => setShowSettings(!showSettings)}
             className="p-2 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors"
