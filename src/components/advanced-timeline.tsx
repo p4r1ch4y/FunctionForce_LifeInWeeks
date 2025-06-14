@@ -2,15 +2,17 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  CalendarDaysIcon, 
-  SparklesIcon, 
+import {
+  CalendarDaysIcon,
+  SparklesIcon,
   MagnifyingGlassIcon,
   AdjustmentsHorizontalIcon,
   PlayIcon,
-  PauseIcon
+  PauseIcon,
+  GlobeAltIcon
 } from '@heroicons/react/24/outline';
 import { createClient } from '@/lib/supabase-client';
+import HistoricalEventsPanel from './historical-events-panel';
 import { TimelineWeek, PersonalEvent } from '@/types';
 
 interface AdvancedTimelineProps {
@@ -40,6 +42,8 @@ export default function AdvancedTimeline({ userId }: AdvancedTimelineProps) {
   });
   const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
+  const [showHistoricalEvents, setShowHistoricalEvents] = useState(false);
+  const [historicalEventsDate, setHistoricalEventsDate] = useState<Date | null>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -336,6 +340,10 @@ export default function AdvancedTimeline({ userId }: AdvancedTimelineProps) {
                 setSelectedWeek(week);
                 setCurrentWeekIndex(index);
               }}
+              onDoubleClick={() => {
+                setHistoricalEventsDate(new Date(week.date));
+                setShowHistoricalEvents(true);
+              }}
               onMouseEnter={() => setHoveredWeek(week.weekNumber)}
               onMouseLeave={() => setHoveredWeek(null)}
               title={`Week ${week.weekNumber} - ${new Date(week.date).toLocaleDateString()}`}
@@ -461,11 +469,32 @@ export default function AdvancedTimeline({ userId }: AdvancedTimelineProps) {
                     <p>No events recorded for this week</p>
                   </div>
                 )}
+
+                {/* Historical Events Button */}
+                <div className="pt-4 border-t">
+                  <button
+                    onClick={() => {
+                      setHistoricalEventsDate(new Date(selectedWeek.date));
+                      setShowHistoricalEvents(true);
+                    }}
+                    className="w-full flex items-center justify-center space-x-2 py-2 px-4 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors"
+                  >
+                    <GlobeAltIcon className="w-4 h-4" />
+                    <span>View Historical Events</span>
+                  </button>
+                </div>
               </div>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
+
+      {/* Historical Events Panel */}
+      <HistoricalEventsPanel
+        selectedDate={historicalEventsDate || undefined}
+        isVisible={showHistoricalEvents}
+        onClose={() => setShowHistoricalEvents(false)}
+      />
     </div>
   );
 }

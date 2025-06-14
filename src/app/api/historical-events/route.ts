@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase';
+import { historicalEventsService, type HistoricalEvent } from '@/lib/historical-events';
 
-// Comprehensive historical events database
-const HISTORICAL_EVENTS = [
+// Fallback historical events database (used when Wikipedia API fails)
+const FALLBACK_HISTORICAL_EVENTS = [
   // Technology & Innovation
   { date: '2007-06-29', title: 'iPhone Launch', description: 'Apple launches the first iPhone, revolutionizing mobile technology', category: 'Technology' },
   { date: '2004-02-04', title: 'Facebook Launch', description: 'Facebook is launched by Mark Zuckerberg at Harvard University', category: 'Technology' },
@@ -83,15 +84,49 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get('endDate');
     const category = searchParams.get('category');
     const limit = parseInt(searchParams.get('limit') || '10');
+    const useWikipedia = searchParams.get('wikipedia') !== 'false'; // Default to true
 
-    let filteredEvents = [...HISTORICAL_EVENTS];
+    let events: HistoricalEvent[] = [];
 
-    // Filter by date range
-    if (startDate && endDate) {
+    // Try to fetch from Wikipedia API first
+    if (useWikipedia && startDate) {
+      try {
+        const date = new Date(startDate);
+        console.log(`Fetching Wikipedia events for ${date.toDateString()}`);
+
+        const wikipediaEvents = await historicalEventsService.getEventsForDate(date);
+
+        if (wikipediaEvents.length > 0) {
+          events = wikipediaEvents;
+          console.log(`Found ${wikipediaEvents.length} Wikipedia events`);
+        } else {
+          console.log('No Wikipedia events found, using fallback data');
+          events = FALLBACK_HISTORICAL_EVENTS.map(event => ({
+            ...event,
+            source: 'local' as const
+          }));
+        }
+      } catch (wikipediaError) {
+        console.warn('Wikipedia API failed, using fallback data:', wikipediaError);
+        events = FALLBACK_HISTORICAL_EVENTS.map(event => ({
+          ...event,
+          source: 'local' as const
+        }));
+      }
+    } else {
+      // Use fallback data
+      events = FALLBACK_HISTORICAL_EVENTS.map(event => ({
+        ...event,
+        source: 'local' as const
+      }));
+    }
+
+    // Filter by date range (for fallback data)
+    if (startDate && endDate && events === FALLBACK_HISTORICAL_EVENTS) {
       const start = new Date(startDate);
       const end = new Date(endDate);
-      
-      filteredEvents = filteredEvents.filter(event => {
+
+      events = events.filter(event => {
         const eventDate = new Date(event.date);
         return eventDate >= start && eventDate <= end;
       });
@@ -99,20 +134,42 @@ export async function GET(request: NextRequest) {
 
     // Filter by category
     if (category) {
-      filteredEvents = filteredEvents.filter(event => 
+      events = events.filter(event =>
         event.category.toLowerCase() === category.toLowerCase()
       );
     }
 
-    // Sort by date (most recent first) and limit results
-    filteredEvents = filteredEvents
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    // Sort by significance and date, then limit results
+    events = events
+      .sort((a, b) => {
+        // Sort by significance first (high > medium > low)
+        const significanceOrder = { high: 3, medium: 2, low: 1 };
+        const aSignificance = significanceOrder[a.significance || 'low'];
+        const bSignificance = significanceOrder[b.significance || 'low'];
+
+        if (aSignificance !== bSignificance) {
+          return bSignificance - aSignificance;
+        }
+
+        // Then by date (most recent first)
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      })
       .slice(0, limit);
 
-    return NextResponse.json({ 
-      events: filteredEvents,
-      total: filteredEvents.length,
-      categories: Array.from(new Set(HISTORICAL_EVENTS.map(e => e.category)))
+    // Get all available categories
+    const allCategories = Array.from(new Set([
+      ...FALLBACK_HISTORICAL_EVENTS.map(e => e.category),
+      ...events.map(e => e.category)
+    ]));
+
+    return NextResponse.json({
+      events,
+      total: events.length,
+      categories: allCategories,
+      source: events.length > 0 && events[0].source === 'wikipedia' ? 'wikipedia' : 'local',
+      message: events.length > 0 && events[0].source === 'wikipedia'
+        ? 'Data fetched from Wikipedia API'
+        : 'Using local historical data'
     });
   } catch (error) {
     console.error('Error fetching historical events:', error);
@@ -125,20 +182,20 @@ export async function GET(request: NextRequest) {
 
 // Utility functions (not exported as route handlers)
 function getHistoricalEventsForWeek(weekStart: Date, weekEnd: Date) {
-  return HISTORICAL_EVENTS.filter(event => {
+  return FALLBACK_HISTORICAL_EVENTS.filter(event => {
     const eventDate = new Date(event.date);
     return eventDate >= weekStart && eventDate <= weekEnd;
   });
 }
 
 function getEventsByYear(year: number) {
-  return HISTORICAL_EVENTS.filter(event => {
+  return FALLBACK_HISTORICAL_EVENTS.filter(event => {
     const eventDate = new Date(event.date);
     return eventDate.getFullYear() === year;
   });
 }
 
 function getRandomHistoricalEvent() {
-  const randomIndex = Math.floor(Math.random() * HISTORICAL_EVENTS.length);
-  return HISTORICAL_EVENTS[randomIndex];
+  const randomIndex = Math.floor(Math.random() * FALLBACK_HISTORICAL_EVENTS.length);
+  return FALLBACK_HISTORICAL_EVENTS[randomIndex];
 }

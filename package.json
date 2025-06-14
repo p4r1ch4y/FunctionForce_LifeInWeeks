@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "node test-runner.js",
+    "test:connections": "npm run test"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.17",
