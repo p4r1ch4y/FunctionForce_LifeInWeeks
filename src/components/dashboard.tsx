@@ -19,6 +19,7 @@ import LifeChapters from './life-chapters';
 import AIInsights from './ai-insights';
 import SampleDataSeeder from './sample-data-seeder';
 import DatabaseStatus from './database-status';
+import HistoricalEventsPopulator from './historical-events-populator';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase-client';
 import { useRouter } from 'next/navigation';
@@ -136,6 +137,13 @@ export default function Dashboard({ userId }: DashboardProps) {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Database Status Checker */}
         <DatabaseStatus userId={userId} />
+
+        {/* Historical Events Populator */}
+        <div className="mb-6">
+          <HistoricalEventsPopulator
+            onPopulated={() => window.location.reload()}
+          />
+        </div>
 
         {/* Sample Data Seeder */}
         <div className="mb-6">
