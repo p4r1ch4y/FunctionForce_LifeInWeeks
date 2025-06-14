@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   description: 'Visualize your life week by week with AI-powered insights, personal narratives, and historical context. Map your journey through time.',
   keywords: 'life timeline, personal development, AI insights, life visualization, weekly planner',
   authors: [{ name: 'LifeWeeks Team' }],
+  metadataBase: new URL('https://lifeweeks.vercel.app'),
   openGraph: {
     title: 'LifeWeeks - Your Life in 4,000 Weeks',
     description: 'Visualize your life week by week with AI-powered insights and historical context.',
@@ -20,7 +21,11 @@ export const metadata: Metadata = {
     title: 'LifeWeeks - Your Life in 4,000 Weeks',
     description: 'Visualize your life week by week with AI-powered insights and historical context.',
   },
-  viewport: 'width=device-width, initial-scale=1',
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
   themeColor: '#3b82f6',
 };
 

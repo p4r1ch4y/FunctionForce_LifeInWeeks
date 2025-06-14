@@ -61,8 +61,16 @@ export async function GET(request: NextRequest) {
   try {
     // Verify user authentication
     const supabase = createClient();
-    const { data: { session } } = await supabase.auth.getSession();
-    
+
+    // Handle authentication check safely
+    let session = null;
+    try {
+      const { data: { session: userSession } } = await supabase.auth.getSession();
+      session = userSession;
+    } catch (authError) {
+      console.warn('Auth check failed:', authError);
+    }
+
     if (!session) {
       return NextResponse.json(
         { error: 'Unauthorized' },
