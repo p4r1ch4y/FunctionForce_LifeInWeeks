@@ -49,37 +49,51 @@ export default function SignUp() {
     try {
       const supabase = createClient();
 
-      // Sign up the user
+      // Sign up the user with metadata
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
             birthdate,
+            email, // Include email in metadata
           },
         },
       });
 
       if (authError) throw authError;
 
-      // Create user profile
       if (authData.user) {
-        const { error: profileError } = await supabase
-          .from('users')
-          .insert([
-            {
-              id: authData.user.id,
-              email,
-              birthdate,
-            },
-          ]);
+        // The user profile will be created automatically by the trigger
+        // But let's also try to create it manually as a fallback
+        try {
+          const { error: profileError } = await supabase
+            .from('users')
+            .upsert([
+              {
+                id: authData.user.id,
+                email,
+                birthdate,
+              },
+            ], {
+              onConflict: 'id'
+            });
 
-        if (profileError) throw profileError;
+          if (profileError) {
+            console.warn('Profile creation warning:', profileError);
+            // Don't throw here as the trigger might have already created it
+          }
+        } catch (profileError) {
+          console.warn('Profile creation failed, but continuing:', profileError);
+        }
+
+        toast.success('Account created successfully! Please check your email to verify your account.');
+        router.push('/auth/signin');
+      } else {
+        throw new Error('User creation failed');
       }
-
-      toast.success('Account created successfully!');
-      router.push('/');
     } catch (error: any) {
+      console.error('Signup error:', error);
       toast.error(error.message || 'Failed to create account');
     } finally {
       setIsLoading(false);

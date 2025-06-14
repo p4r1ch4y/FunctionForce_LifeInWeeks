@@ -16,6 +16,8 @@ import EventForm from './event-form';
 import EventManager from './event-manager';
 import LifeChapters from './life-chapters';
 import AIInsights from './ai-insights';
+import SampleDataSeeder from './sample-data-seeder';
+import DatabaseStatus from './database-status';
 import { createClient } from '@/lib/supabase-client';
 import { useRouter } from 'next/navigation';
 import toast, { Toaster } from 'react-hot-toast';
@@ -122,6 +124,17 @@ export default function Dashboard({ userId }: DashboardProps) {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Database Status Checker */}
+        <DatabaseStatus userId={userId} />
+
+        {/* Sample Data Seeder */}
+        <div className="mb-6">
+          <SampleDataSeeder
+            userId={userId}
+            onDataSeeded={() => window.location.reload()}
+          />
+        </div>
+
         <motion.div
           key={activeTab}
           initial={{ opacity: 0, y: 20 }}

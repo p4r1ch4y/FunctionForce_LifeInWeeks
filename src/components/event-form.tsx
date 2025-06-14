@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase-client';
+import { analyzeSentiment } from '@/lib/ai';
 import type { PersonalEvent } from '@/types';
 
 interface EventFormProps {
@@ -25,35 +26,72 @@ export default function EventForm({ userId, onSuccess, event }: EventFormProps) 
 
     try {
       const supabase = createClient();
-      
+
+      // Analyze sentiment with fallback
+      let sentiment: 'positive' | 'negative' | 'neutral' = 'neutral';
+      try {
+        sentiment = await analyzeSentiment(`${title} ${description}`);
+      } catch (sentimentError) {
+        console.warn('Sentiment analysis failed, using fallback:', sentimentError);
+        // Use simple keyword-based fallback
+        const text = `${title} ${description}`.toLowerCase();
+        if (text.includes('happy') || text.includes('success') || text.includes('great') || text.includes('love') || text.includes('amazing') || text.includes('wonderful')) {
+          sentiment = 'positive';
+        } else if (text.includes('sad') || text.includes('fail') || text.includes('bad') || text.includes('angry') || text.includes('terrible') || text.includes('awful')) {
+          sentiment = 'negative';
+        }
+      }
+
       const eventData = {
-        title,
-        description,
-        date,
+        title: title.trim(),
+        description: description.trim(),
+        date: new Date(date).toISOString(),
         category,
+        sentiment,
         user_id: userId,
       };
+
+      console.log('Submitting event data:', eventData);
 
       if (event) {
         // Update existing event
         const { error: updateError } = await supabase
           .from('personal_events')
           .update(eventData)
-          .eq('id', event.id);
+          .eq('id', event.id)
+          .eq('user_id', userId);
 
-        if (updateError) throw updateError;
+        if (updateError) {
+          console.error('Update error:', updateError);
+          throw updateError;
+        }
       } else {
         // Create new event
-        const { error: insertError } = await supabase
+        const { data, error: insertError } = await supabase
           .from('personal_events')
-          .insert([eventData]);
+          .insert([eventData])
+          .select();
 
-        if (insertError) throw insertError;
+        if (insertError) {
+          console.error('Insert error:', insertError);
+          throw insertError;
+        }
+
+        console.log('Event created:', data);
+      }
+
+      // Reset form only if creating new event
+      if (!event) {
+        setTitle('');
+        setDescription('');
+        setDate('');
+        setCategory('Personal');
       }
 
       onSuccess?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      console.error('Event submission error:', err);
+      setError(err instanceof Error ? err.message : 'An error occurred while saving the event');
     } finally {
       setIsLoading(false);
     }
