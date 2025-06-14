@@ -2,7 +2,7 @@
 
 A modern, AI-powered interactive timeline application that visualizes your life week by week. Built for hackathons with a focus on polished UX, advanced AI features, and meaningful personal insights.
 
-![LifeWeeks Preview](https://via.placeholder.com/800x400/3b82f6/ffffff?text=LifeWeeks+Timeline)
+![LifeWeeks Preview]([https://via.placeholder.com/800x400/3b82f6/ffffff?text=LifeWeeks+Timeline](https://lifeweeks.vercel.app/))
 
 ## 🌟 Features
 
