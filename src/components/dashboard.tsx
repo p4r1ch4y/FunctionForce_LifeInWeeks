@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  PlusIcon, 
-  CalendarDaysIcon, 
-  ChartBarIcon, 
+import {
+  PlusIcon,
+  CalendarDaysIcon,
+  ChartBarIcon,
   PaintBrushIcon,
   Cog6ToothIcon,
-  ArrowRightOnRectangleIcon
+  ArrowRightOnRectangleIcon,
+  GlobeAltIcon
 } from '@heroicons/react/24/outline';
 import TimelineView from './timeline-view';
 import AdvancedTimeline from './advanced-timeline';
@@ -16,6 +17,11 @@ import EventForm from './event-form';
 import EventManager from './event-manager';
 import LifeChapters from './life-chapters';
 import AIInsights from './ai-insights';
+import SampleDataSeeder from './sample-data-seeder';
+import DatabaseStatus from './database-status';
+import HistoricalEventsPopulator from './historical-events-populator';
+import AnniversaryReminders from './anniversary-reminders';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase-client';
 import { useRouter } from 'next/navigation';
 import toast, { Toaster } from 'react-hot-toast';
@@ -72,6 +78,14 @@ export default function Dashboard({ userId }: DashboardProps) {
             </div>
             
             <div className="flex items-center space-x-4">
+              <Link
+                href="/historical-events"
+                className="btn-secondary flex items-center"
+              >
+                <GlobeAltIcon className="w-4 h-4 mr-2" />
+                Historical Events
+              </Link>
+
               <button
                 onClick={() => setShowEventForm(true)}
                 className="btn-primary"
@@ -79,12 +93,12 @@ export default function Dashboard({ userId }: DashboardProps) {
                 <PlusIcon className="w-4 h-4 mr-2" />
                 Add Event
               </button>
-              
+
               <div className="flex items-center space-x-2">
                 <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
                   <Cog6ToothIcon className="w-5 h-5" />
                 </button>
-                <button 
+                <button
                   onClick={handleSignOut}
                   className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
                 >
@@ -122,6 +136,29 @@ export default function Dashboard({ userId }: DashboardProps) {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Database Status Checker */}
+        <DatabaseStatus userId={userId} />
+
+        {/* Historical Events Populator */}
+        <div className="mb-6">
+          <HistoricalEventsPopulator
+            onPopulated={() => window.location.reload()}
+          />
+        </div>
+
+        {/* Anniversary Reminders */}
+        <div className="mb-6">
+          <AnniversaryReminders userId={userId} />
+        </div>
+
+        {/* Sample Data Seeder */}
+        <div className="mb-6">
+          <SampleDataSeeder
+            userId={userId}
+            onDataSeeded={() => window.location.reload()}
+          />
+        </div>
+
         <motion.div
           key={activeTab}
           initial={{ opacity: 0, y: 20 }}
@@ -133,7 +170,10 @@ export default function Dashboard({ userId }: DashboardProps) {
               <div className="flex justify-between items-center">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900">Your Life Timeline</h2>
-                  <p className="text-gray-600">Each square represents a week of your life</p>
+                  <p className="text-gray-600">
+                    Each square represents a week of your life.
+                    <span className="text-blue-600 font-medium"> Double-click any week to see historical events!</span>
+                  </p>
                 </div>
                 <div className="flex items-center space-x-4 text-sm text-gray-600">
                   <div className="flex items-center">

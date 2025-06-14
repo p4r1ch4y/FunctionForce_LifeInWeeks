@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "node test-runner.js",
+    "test:connections": "npm run test"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.17",
@@ -16,6 +18,8 @@
     "@supabase/ssr": "^0.0.10",
     "@supabase/supabase-js": "^2.38.4",
     "framer-motion": "^10.16.16",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.1",
     "lucide-react": "^0.294.0",
     "next": "14.0.4",
     "react": "^18.2.0",

@@ -2,15 +2,19 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  CalendarDaysIcon, 
-  SparklesIcon, 
+import {
+  CalendarDaysIcon,
+  SparklesIcon,
   MagnifyingGlassIcon,
   AdjustmentsHorizontalIcon,
   PlayIcon,
-  PauseIcon
+  PauseIcon,
+  GlobeAltIcon,
+  ArrowPathIcon
 } from '@heroicons/react/24/outline';
 import { createClient } from '@/lib/supabase-client';
+import HistoricalEventsPanel from './historical-events-panel';
+import TimelineExport from './timeline-export';
 import { TimelineWeek, PersonalEvent } from '@/types';
 
 interface AdvancedTimelineProps {
@@ -40,11 +44,22 @@ export default function AdvancedTimeline({ userId }: AdvancedTimelineProps) {
   });
   const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
+  const [showHistoricalEvents, setShowHistoricalEvents] = useState(false);
+  const [historicalEventsDate, setHistoricalEventsDate] = useState<Date | null>(null);
+  const [showHistoricalInGrid, setShowHistoricalInGrid] = useState(true);
+  const [historicalEvents, setHistoricalEvents] = useState<any[]>([]);
+  const [isLoadingHistorical, setIsLoadingHistorical] = useState(false);
   const timelineRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchTimelineData();
   }, [userId]);
+
+  useEffect(() => {
+    if (showHistoricalInGrid && weeks.length > 0) {
+      fetchHistoricalEventsForTimeline();
+    }
+  }, [showHistoricalInGrid, weeks.length]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -59,7 +74,7 @@ export default function AdvancedTimeline({ userId }: AdvancedTimelineProps) {
   const fetchTimelineData = async () => {
     try {
       const supabase = createClient();
-      
+
       // Get user birthdate
       let birthDate = new Date('1990-01-01');
       const { data: userData } = await supabase
@@ -84,7 +99,7 @@ export default function AdvancedTimeline({ userId }: AdvancedTimelineProps) {
       // Generate timeline weeks
       const now = new Date();
       const totalWeeks = Math.floor((now.getTime() - birthDate.getTime()) / (7 * 24 * 60 * 60 * 1000));
-      
+
       const timelineWeeks: TimelineWeek[] = Array.from({ length: Math.max(totalWeeks, 1040) }, (_, i) => {
         const weekDate = new Date(birthDate);
         weekDate.setDate(weekDate.getDate() + i * 7);
@@ -111,11 +126,68 @@ export default function AdvancedTimeline({ userId }: AdvancedTimelineProps) {
     }
   };
 
+  const fetchHistoricalEventsForTimeline = async () => {
+    if (!weeks.length) return;
+
+    setIsLoadingHistorical(true);
+    try {
+      // Get historical events from database first
+      const response = await fetch('/api/historical-events?limit=50&wikipedia=false');
+      if (response.ok) {
+        const data = await response.json();
+        const events = data.events || [];
+
+        // Map historical events to weeks
+        const updatedWeeks = weeks.map(week => {
+          const weekDate = new Date(week.date);
+          const weekEnd = new Date(weekDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+          const weekHistoricalEvents = events.filter((event: any) => {
+            const eventDate = new Date(event.date);
+            // Check if the event falls within this week
+            return eventDate >= weekDate && eventDate < weekEnd;
+          });
+
+          return {
+            ...week,
+            historicalEvents: weekHistoricalEvents
+          };
+        });
+
+        setWeeks(updatedWeeks);
+        setHistoricalEvents(events);
+      }
+    } catch (error) {
+      console.error('Error fetching historical events for timeline:', error);
+    } finally {
+      setIsLoadingHistorical(false);
+    }
+  };
+
   const getWeekColor = (week: TimelineWeek) => {
-    if (week.personalEvents.length === 0) {
+    const hasPersonalEvents = week.personalEvents.length > 0;
+    const hasHistoricalEvents = showHistoricalInGrid && week.historicalEvents && week.historicalEvents.length > 0;
+
+    if (!hasPersonalEvents && !hasHistoricalEvents) {
       return settings.showEmptyWeeks ? 'bg-gray-100 hover:bg-gray-200' : 'hidden';
     }
 
+    // If only historical events, show with a subtle indicator
+    if (!hasPersonalEvents && hasHistoricalEvents) {
+      return 'bg-amber-100 hover:bg-amber-200 border border-amber-300';
+    }
+
+    // If both personal and historical events, add a special indicator
+    if (hasPersonalEvents && hasHistoricalEvents) {
+      const baseColor = getPersonalEventColor(week);
+      return `${baseColor} ring-2 ring-amber-300 ring-opacity-50`;
+    }
+
+    // Only personal events
+    return getPersonalEventColor(week);
+  };
+
+  const getPersonalEventColor = (week: TimelineWeek) => {
     switch (settings.colorMode) {
       case 'sentiment':
         return getSentimentColor(week);
@@ -220,6 +292,12 @@ export default function AdvancedTimeline({ userId }: AdvancedTimelineProps) {
         </div>
 
         <div className="flex items-center space-x-2">
+          <TimelineExport
+            timelineRef={timelineRef}
+            userName="User"
+            totalEvents={weeks.reduce((total, week) => total + week.personalEvents.length, 0)}
+          />
+
           <button
             onClick={() => setShowSettings(!showSettings)}
             className="p-2 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors"
@@ -267,7 +345,7 @@ export default function AdvancedTimeline({ userId }: AdvancedTimelineProps) {
                 />
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <label className="flex items-center space-x-2">
                   <input
                     type="checkbox"
@@ -276,6 +354,22 @@ export default function AdvancedTimeline({ userId }: AdvancedTimelineProps) {
                     className="rounded"
                   />
                   <span className="text-sm text-gray-700">Show empty weeks</span>
+                </label>
+
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={showHistoricalInGrid}
+                    onChange={(e) => setShowHistoricalInGrid(e.target.checked)}
+                    className="rounded"
+                  />
+                  <span className="text-sm text-gray-700 flex items-center">
+                    <GlobeAltIcon className="w-4 h-4 mr-1" />
+                    Show historical events
+                    {isLoadingHistorical && (
+                      <ArrowPathIcon className="w-3 h-3 ml-1 animate-spin" />
+                    )}
+                  </span>
                 </label>
               </div>
             </div>
@@ -336,6 +430,10 @@ export default function AdvancedTimeline({ userId }: AdvancedTimelineProps) {
                 setSelectedWeek(week);
                 setCurrentWeekIndex(index);
               }}
+              onDoubleClick={() => {
+                setHistoricalEventsDate(new Date(week.date));
+                setShowHistoricalEvents(true);
+              }}
               onMouseEnter={() => setHoveredWeek(week.weekNumber)}
               onMouseLeave={() => setHoveredWeek(null)}
               title={`Week ${week.weekNumber} - ${new Date(week.date).toLocaleDateString()}`}
@@ -392,6 +490,19 @@ export default function AdvancedTimeline({ userId }: AdvancedTimelineProps) {
           <div className="w-3 h-3 bg-gray-100 rounded-sm"></div>
           <span>Empty</span>
         </div>
+
+        {showHistoricalInGrid && (
+          <>
+            <div className="flex items-center space-x-2">
+              <div className="w-3 h-3 bg-amber-100 border border-amber-300 rounded-sm"></div>
+              <span>Historical Events</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-3 h-3 bg-green-400 ring-2 ring-amber-300 ring-opacity-50 rounded-sm"></div>
+              <span>Personal + Historical</span>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Week Detail Modal */}
@@ -427,11 +538,12 @@ export default function AdvancedTimeline({ userId }: AdvancedTimelineProps) {
                   })}
                 </div>
                 
-                {selectedWeek.personalEvents.length > 0 ? (
+                {/* Personal Events */}
+                {selectedWeek.personalEvents.length > 0 && (
                   <div>
                     <h4 className="font-medium text-gray-900 mb-2 flex items-center">
                       <CalendarDaysIcon className="w-4 h-4 mr-2" />
-                      Events ({selectedWeek.personalEvents.length})
+                      Personal Events ({selectedWeek.personalEvents.length})
                     </h4>
                     <div className="space-y-2">
                       {selectedWeek.personalEvents.map((event) => (
@@ -455,17 +567,80 @@ export default function AdvancedTimeline({ userId }: AdvancedTimelineProps) {
                       ))}
                     </div>
                   </div>
-                ) : (
+                )}
+
+                {/* Historical Events */}
+                {showHistoricalInGrid && selectedWeek.historicalEvents && selectedWeek.historicalEvents.length > 0 && (
+                  <div className={selectedWeek.personalEvents.length > 0 ? 'mt-4 pt-4 border-t' : ''}>
+                    <h4 className="font-medium text-gray-900 mb-2 flex items-center">
+                      <GlobeAltIcon className="w-4 h-4 mr-2" />
+                      Historical Events ({selectedWeek.historicalEvents.length})
+                    </h4>
+                    <div className="space-y-2">
+                      {selectedWeek.historicalEvents.slice(0, 3).map((event: any, index: number) => (
+                        <div key={index} className="p-3 bg-amber-50 rounded-lg border border-amber-200">
+                          <div className="font-medium text-gray-900">{event.title}</div>
+                          <div className="text-sm text-gray-600">{event.description}</div>
+                          <div className="flex items-center mt-2 space-x-2">
+                            <span className="px-2 py-1 text-xs bg-amber-100 text-amber-800 rounded-full">
+                              {event.category}
+                            </span>
+                            {event.significance && (
+                              <span className={`
+                                px-2 py-1 text-xs rounded-full
+                                ${event.significance === 'high' ? 'bg-red-100 text-red-800' :
+                                  event.significance === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                                  'bg-blue-100 text-blue-800'}
+                              `}>
+                                {event.significance}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                      {selectedWeek.historicalEvents.length > 3 && (
+                        <div className="text-center text-sm text-gray-500">
+                          +{selectedWeek.historicalEvents.length - 3} more events
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* No events message */}
+                {selectedWeek.personalEvents.length === 0 &&
+                 (!showHistoricalInGrid || !selectedWeek.historicalEvents || selectedWeek.historicalEvents.length === 0) && (
                   <div className="text-center py-8 text-gray-500">
                     <CalendarDaysIcon className="w-12 h-12 mx-auto mb-2 text-gray-300" />
                     <p>No events recorded for this week</p>
                   </div>
                 )}
+
+                {/* Historical Events Button */}
+                <div className="pt-4 border-t">
+                  <button
+                    onClick={() => {
+                      setHistoricalEventsDate(new Date(selectedWeek.date));
+                      setShowHistoricalEvents(true);
+                    }}
+                    className="w-full flex items-center justify-center space-x-2 py-2 px-4 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors"
+                  >
+                    <GlobeAltIcon className="w-4 h-4" />
+                    <span>View Historical Events</span>
+                  </button>
+                </div>
               </div>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
+
+      {/* Historical Events Panel */}
+      <HistoricalEventsPanel
+        selectedDate={historicalEventsDate || undefined}
+        isVisible={showHistoricalEvents}
+        onClose={() => setShowHistoricalEvents(false)}
+      />
     </div>
   );
 }
