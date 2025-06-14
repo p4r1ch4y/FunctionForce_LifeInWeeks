@@ -5,8 +5,23 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Life in Weeks Timeline',
-  description: 'Visualize your life week by week with AI-powered insights and historical context.',
+  title: 'LifeWeeks - Your Life in 4,000 Weeks',
+  description: 'Visualize your life week by week with AI-powered insights, personal narratives, and historical context. Map your journey through time.',
+  keywords: 'life timeline, personal development, AI insights, life visualization, weekly planner',
+  authors: [{ name: 'LifeWeeks Team' }],
+  openGraph: {
+    title: 'LifeWeeks - Your Life in 4,000 Weeks',
+    description: 'Visualize your life week by week with AI-powered insights and historical context.',
+    type: 'website',
+    locale: 'en_US',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'LifeWeeks - Your Life in 4,000 Weeks',
+    description: 'Visualize your life week by week with AI-powered insights and historical context.',
+  },
+  viewport: 'width=device-width, initial-scale=1',
+  themeColor: '#3b82f6',
 };
 
 export default function RootLayout({
@@ -15,12 +30,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} min-h-screen bg-gray-50`}>
-        <main className="container mx-auto px-4 py-8">
-          {children}
-        </main>
+    <html lang="en" className="scroll-smooth">
+      <body className={`${inter.className} min-h-screen bg-white antialiased`}>
+        {children}
       </body>
     </html>
   );
-} 
+}

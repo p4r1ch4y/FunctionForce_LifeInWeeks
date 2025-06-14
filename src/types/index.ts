@@ -35,4 +35,5 @@ export interface LifeChapter {
   events: PersonalEvent[];
   artPrompt?: string;
   generatedArt?: string;
-} 
+  color?: string;
+}
