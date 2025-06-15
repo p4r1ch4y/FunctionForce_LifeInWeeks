@@ -4,7 +4,7 @@ A modern, AI-powered interactive timeline application that visualizes your life 
 
 ![Anveshan Hackathon Banner](/images/Anveshan_Hackathon.PNG)
 
-Built By Function Force Team or Left Shift Legends ( whichever team name you like more ) [Aman](https://github.com/Finna-code) , [Pavan](https://github.com/PavanKoder27) and [Subrata](https://github.com/p4r1ch4y)
+Built By Function Force Team or  Shift Left Legends ( whichever team name you like more ) [Aman](https://github.com/Finna-code) , [Pavan](https://github.com/PavanKoder27) and [Subrata](https://github.com/p4r1ch4y)
 
 ## 🎥 Demo & Setup
 
