@@ -1,8 +1,11 @@
 # LifeWeeks - Your Life in 4,000 Weeks
 
-A modern, AI-powered interactive timeline application that visualizes your life week by week. Built for hackathons with a focus on polished UX, advanced AI features, and meaningful personal insights.
+A modern, AI-powered interactive timeline application that visualizes your life week by week. Built during Anveshan Jun 2025 hackathons with a focus on polished UX, advanced AI features, and meaningful personal insights.
 
-![LifeWeeks Preview]([https://via.placeholder.com/800x400/3b82f6/ffffff?text=LifeWeeks+Timeline](https://lifeweeks.vercel.app/))
+LifeWeeks An Modern AI Powered Application : .[The What How Why] 
+
+.[LifeWeeks Demo and SetUp](https://youtu.be/0PE9BiSOoq0)
+
 
 ## 🌟 Features
 
@@ -59,8 +62,8 @@ A modern, AI-powered interactive timeline application that visualizes your life 
 
 1. **Clone and install**:
    ```bash
-   git clone <repository-url>
-   cd lifeweeks
+   git clone https://github.com/p4r1ch4y/FunctionForce_LifeInWeeks.git
+   cd FunctionForce_LifeInWeek-main
    npm install
    ```
 
