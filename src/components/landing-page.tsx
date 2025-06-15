@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { 
@@ -8,7 +9,8 @@ import {
   ChartBarIcon, 
   PaintBrushIcon,
   ArrowRightIcon,
-  PlayIcon
+  PlayIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline';
 
 const features = [
@@ -42,6 +44,8 @@ const stats = [
 ];
 
 export default function LandingPage() {
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
@@ -88,7 +92,10 @@ export default function LandingPage() {
                   Start Your Journey
                   <ArrowRightIcon className="w-5 h-5 ml-2" />
                 </Link>
-                <button className="flex items-center text-gray-600 hover:text-gray-900 transition-colors">
+                <button 
+                  onClick={() => setShowVideoModal(true)}
+                  className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+                >
                   <PlayIcon className="w-5 h-5 mr-2" />
                   Watch Demo
                 </button>
@@ -252,9 +259,47 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="py-8 px-4 sm:px-6 lg:px-8 bg-gray-50">
         <div className="max-w-7xl mx-auto text-center text-gray-600">
-          <p>&copy; 2024 LifeWeeks. Built with ❤️ for meaningful reflection.</p>
+          <p>&copy; 2025 LifeWeeks. Built with ❤️ by Aman, Pavan & Subrata for meaningful reflection.</p>
         </div>
       </footer>
+
+      {/* Video Modal */}
+      {showVideoModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="bg-white rounded-lg shadow-xl max-w-4xl w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">LifeWeeks Demo</h3>
+              <button 
+                onClick={() => setShowVideoModal(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <XMarkIcon className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="p-6">
+              <div className="aspect-video">
+                <iframe
+                  width="100%"
+                  height="100%"
+                  src="https://www.youtube.com/embed/L3h1uaF1KIs"
+                  title="LifeWeeks Demo"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="rounded-lg"
+                />
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }
+

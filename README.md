@@ -1,10 +1,22 @@
 # LifeWeeks - Your Life in 4,000 Weeks
 
-A modern, AI-powered interactive timeline application that visualizes your life week by week. Built during Anveshan Jun 2025 hackathons with a focus on polished UX, advanced AI features, and meaningful personal insights.
+A modern, AI-powered interactive timeline application that visualizes your life week by week. Built during Anveshan Jun 2025 hackathon with a focus on polished UX, advanced AI features, and meaningful personal insights.
 
-LifeWeeks An Modern AI Powered Application : .[The What How Why] 
+![Anveshan Hackathon Banner](/images/Anveshan_Hackathon.PNG)
 
-.[LifeWeeks Demo and SetUp](https://youtu.be/0PE9BiSOoq0)
+Built By Function Force Team or Left Shift Legends ( whichever team name you like more ) [Aman](https://github.com/Finna-code) , [Pavan](https://github.com/PavanKoder27) and [Subrata](https://github.com/p4r1ch4y)
+
+## 🎥 Demo & Setup
+
+LifeWeeks An Modern AI Powered Application : [The What How Why](https://youtu.be/L3h1uaF1KIs)
+
+[LifeWeeks Demo and SetUp](https://youtu.be/0PE9BiSOoq0)
+
+
+## System Architecture 
+
+![System Architecture](/images/lifeweeks_architecture.png)
+
 
 
 ## 🌟 Features
@@ -13,8 +25,18 @@ LifeWeeks An Modern AI Powered Application : .[The What How Why]
 - **Interactive Life Timeline**: Visualize your entire life as a grid of weeks (inspired by the "4,000 weeks" concept)
 - **Smart Event Management**: Add, edit, and organize life events with intelligent categorization
 - **AI-Powered Sentiment Analysis**: Automatic emotional tone detection using Hugging Face models
+
 - **Historical Context**: Connect personal events with significant world events
+![Historical Context](/images/lifeweeks_historicalEvents.png)
+
 - **Life Chapters**: Organize your life into meaningful phases with AI-generated artwork
+![AI Art Generation on Life Chapters](/images/lifeweeks_lifechapterBasedAIArt.png)
+
+- **Export Timeline**: Export your life timeline as an image or PDF
+![Export Timeline](/images/lifeweeks_exportTimeline.png)
+
+- **Anniversary Reminders**: Get notified on important dates and milestones
+![Anniversary Reminders](/images/lifeweeks_anniversary_noti.png)
 
 ### AI-Powered Features
 - **Narrative Generation**: AI creates meaningful connections between personal and historical events
@@ -63,7 +85,7 @@ LifeWeeks An Modern AI Powered Application : .[The What How Why]
 1. **Clone and install**:
    ```bash
    git clone https://github.com/p4r1ch4y/FunctionForce_LifeInWeeks.git
-   cd FunctionForce_LifeInWeek-main
+   cd FunctionForce_LifeInWeeks-main
    npm install
    ```
 
@@ -129,8 +151,13 @@ LifeWeeks An Modern AI Powered Application : .[The What How Why]
 - Statistics section
 - Call-to-action sections
 
+![Landing Page](/images/lifeweeks_homepage.png)
+
 ### Dashboard
 - **Timeline View**: Interactive week grid with hover effects and detailed modals
+
+![Timeline View](/images/lifeweeks_timeLineGrid.png)
+
 - **Event Manager**: Full CRUD operations with filtering and sorting
 - **Life Chapters**: AI-generated artwork for different life phases
 - **AI Insights**: Pattern analysis and personalized recommendations
@@ -145,11 +172,15 @@ LifeWeeks An Modern AI Powered Application : .[The What How Why]
 ### Sentiment Analysis
 Uses Hugging Face's `cardiffnlp/twitter-roberta-base-sentiment-latest` model with fallback keyword analysis for reliability.
 
+![Sentiment Analysis](/images/lifeweeks_aiInsights.png)
+
 ### Narrative Generation
 Connects personal events with historical context using `microsoft/DialoGPT-medium` to create meaningful stories.
 
 ### Art Generation
 Creates detailed prompts for AI art generation based on life events and themes.
+
+![Art Generation](/images/lifeweeks_lifechapterBasedAIArt.png)
 
 ### Insights Engine
 Analyzes patterns in:
